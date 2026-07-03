@@ -98,20 +98,6 @@ Docker Desktop must be running. The frontend connects to the health-checked back
 | POST | `/demo/load-sample-data` | Idempotently load the demo archive |
 | GET | `/demo/sample-memories` | Preview the sample dataset |
 
-## Three-minute demo script
-
-1. Open **Home** and explain why persistent, governable memory matters.
-2. Load the Nepal demo dataset and preview its eight accounts.
-3. Recall “What did elders teach children?” and reveal the supporting memories.
-4. Open **Memory Graph** to show knowledge connected across people, places, and tags.
-5. Add a detail in **Improve**, showing that knowledge evolves without losing history.
-6. Explain **Forget** as a privacy and consent feature, then remove a demo record.
-7. End on `/health`: the same experience works with cloud providers or local fallbacks.
-
-## Screenshots
-
-> Add final submission captures here: Home · Grounded recall · Cultural graph · Improve lifecycle.
-
 ## Track alignment and social impact
 
 Heritage Memory demonstrates persistent AI memory as the product primitive—not a chat feature. It helps communities build searchable intergenerational archives while keeping provenance, correction, and withdrawal visible. Community stewardship is essential: production deployments should include informed consent, role-based access, culturally restricted knowledge, encryption, and local-language governance.
