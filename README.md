@@ -90,6 +90,7 @@ Docker Desktop must be running. The frontend connects to the health-checked back
 | Method | Endpoint | Purpose |
 |---|---|---|
 | GET | `/health` | Provider modes and readiness |
+| GET | `/memory` | List the archive for timeline and stewardship views |
 | POST | `/memory/remember` | Preserve an oral account |
 | POST | `/memory/recall` | Recall grounded knowledge |
 | POST | `/memory/improve` | Correct or expand a memory |

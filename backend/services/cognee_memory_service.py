@@ -27,14 +27,17 @@ class CogneeMemoryService:
         self.embeddings = EmbeddingService()
         self._cognee: Any | None = None
         self._cognee_available = importlib.util.find_spec("cognee") is not None
+        self._cognee_has_llm = bool(
+            os.getenv("LLM_API_KEY", "").strip() or os.getenv("GEMINI_API_KEY", "").strip()
+        )
         self._cognee_disabled = False
-        self.mode = "cognee+local" if self._cognee_available else "local"
+        self.mode = "cognee+local" if self._cognee_available and self._cognee_has_llm else "local"
 
     def _load_cognee(self) -> Any | None:
         """Load Cognee only when indexing is needed, keeping API startup quiet."""
         if self._cognee is not None:
             return self._cognee
-        if not self._cognee_available or self._cognee_disabled:
+        if not self._cognee_available or not self._cognee_has_llm or self._cognee_disabled:
             return None
         try:
             # Cognee reads these during import. Setting them first prevents it
@@ -43,6 +46,14 @@ class CogneeMemoryService:
             os.environ.setdefault("DATA_ROOT_DIRECTORY", str(self._storage_path / "cognee-data"))
             os.environ.setdefault("CACHE_ROOT_DIRECTORY", str(self._storage_path / "cognee-cache"))
             os.environ.setdefault("COGNEE_LOGS_DIR", str(self._storage_path / "cognee-logs"))
+            # Cognee reads generic LLM settings. Reuse this app's Gemini
+            # configuration so users only need one provider credential.
+            gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
+            if gemini_key:
+                os.environ.setdefault("LLM_API_KEY", gemini_key)
+                os.environ.setdefault("LLM_PROVIDER", "gemini")
+                gemini_model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+                os.environ.setdefault("LLM_MODEL", f"gemini/{gemini_model}")
             with warnings.catch_warnings():
                 warnings.filterwarnings(
                     "ignore",

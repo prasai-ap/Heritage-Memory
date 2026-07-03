@@ -39,6 +39,12 @@ async def remember(payload: MemoryCreate) -> Memory:
     return await service.memory.remember(payload)
 
 
+@app.get("/memory", response_model=list[Memory])
+async def list_memories() -> list[Memory]:
+    """Return the archive for timeline and stewardship views."""
+    return await service.memory.all()
+
+
 @app.post("/memory/recall", response_model=RecallResponse)
 async def recall(payload: RecallRequest) -> RecallResponse:
     return await service.recall(payload.question, payload.limit)
