@@ -1,7 +1,9 @@
+import importlib.util
 import logging
 import os
 from pathlib import Path
 from typing import Any
+import warnings
 
 from backend.models.schemas import Memory, MemoryCreate
 from backend.services.embedding_service import EmbeddingService
@@ -20,22 +22,49 @@ class CogneeMemoryService:
 
     def __init__(self) -> None:
         storage_path = os.getenv("COGNEE_STORAGE_PATH", "./data/cognee")
+        self._storage_path = Path(storage_path).resolve()
         self.storage = LocalStorageService(storage_path)
         self.embeddings = EmbeddingService()
         self._cognee: Any | None = None
-        self.mode = "local"
-        try:
-            import cognee  # type: ignore
+        self._cognee_available = importlib.util.find_spec("cognee") is not None
+        self._cognee_disabled = False
+        self.mode = "cognee+local" if self._cognee_available else "local"
 
-            # Cognee otherwise resolves its relative default against the installed
-            # package, which may be read-only on local and container installs.
-            cognee_root = str((Path(storage_path) / "cognee-system").resolve())
-            cognee.config.system_root_directory(cognee_root)
-            cognee.config.data_root_directory(str((Path(storage_path) / "cognee-data").resolve()))
+    def _load_cognee(self) -> Any | None:
+        """Load Cognee only when indexing is needed, keeping API startup quiet."""
+        if self._cognee is not None:
+            return self._cognee
+        if not self._cognee_available or self._cognee_disabled:
+            return None
+        try:
+            # Cognee reads these during import. Setting them first prevents it
+            # from trying to create databases inside site-packages.
+            os.environ.setdefault("SYSTEM_ROOT_DIRECTORY", str(self._storage_path / "cognee-system"))
+            os.environ.setdefault("DATA_ROOT_DIRECTORY", str(self._storage_path / "cognee-data"))
+            os.environ.setdefault("CACHE_ROOT_DIRECTORY", str(self._storage_path / "cognee-cache"))
+            os.environ.setdefault("COGNEE_LOGS_DIR", str(self._storage_path / "cognee-logs"))
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    category=FutureWarning,
+                    module=r"instructor\.providers\.gemini\..*",
+                )
+                warnings.filterwarnings(
+                    "ignore",
+                    message=r"(?s).*google\.generativeai.*",
+                    category=FutureWarning,
+                )
+                import cognee  # type: ignore
+
+            cognee.config.system_root_directory(str(self._storage_path / "cognee-system"))
+            cognee.config.data_root_directory(str(self._storage_path / "cognee-data"))
             self._cognee = cognee
-            self.mode = "cognee+local"
+            return cognee
         except Exception as exc:
             logger.info("Cognee unavailable; using local persistent memory: %s", exc)
+            self._cognee_disabled = True
+            self.mode = "local"
+            return None
 
     @staticmethod
     def _document(memory: Memory) -> str:
@@ -45,16 +74,18 @@ class CogneeMemoryService:
         )
 
     async def _index_with_cognee(self, memory: Memory) -> None:
-        if not self._cognee:
+        cognee = self._load_cognee()
+        if cognee is None:
             return
         try:
-            await self._cognee.add(self._document(memory), dataset_name="heritage_memories")
-            await self._cognee.cognify(datasets=["heritage_memories"])
+            await cognee.add(self._document(memory), dataset_name="heritage_memories")
+            await cognee.cognify(datasets=["heritage_memories"])
         except Exception as exc:
             logger.warning("Cognee indexing failed; local copy remains available: %s", exc)
             self.mode = "local"
             # Do not repeat an expensive known-failing setup for every demo row.
             self._cognee = None
+            self._cognee_disabled = True
 
     async def remember(self, payload: MemoryCreate) -> Memory:
         memory = Memory(**payload.model_dump())
