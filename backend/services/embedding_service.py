@@ -24,9 +24,12 @@ class EmbeddingService:
         try:
             from sentence_transformers import SentenceTransformer
 
-            # Loading is lazy so the API can boot offline. If the model is not
-            # cached, Sentence Transformers may download it on the first recall.
-            self._model = SentenceTransformer(self.model_name)
+            # Prefer an existing cache without making a Hub request. On a fresh
+            # install, fall back to the normal one-time model download.
+            try:
+                self._model = SentenceTransformer(self.model_name, local_files_only=True)
+            except Exception:
+                self._model = SentenceTransformer(self.model_name)
             self.mode = "huggingface"
             logger.info("Using Hugging Face embeddings: %s", self.model_name)
         except Exception as exc:

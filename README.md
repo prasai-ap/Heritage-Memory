@@ -74,6 +74,8 @@ streamlit run frontend/app.py
 
 Open `http://localhost:8501`; interactive API docs are at `http://localhost:8000/docs`. Add `GEMINI_API_KEY` to `.env` for generated answers. With no key, grounded mock responses keep the demo working.
 
+The first semantic recall downloads the multilingual embedding model (roughly a one-time cold start); later runs use the local Hugging Face cache. If the model cannot be downloaded or loaded, recall automatically uses lexical similarity.
+
 ### Docker
 
 ```powershell
@@ -81,7 +83,7 @@ Copy-Item .env.example .env
 docker compose up --build
 ```
 
-The frontend connects to the backend service internally and is exposed on port 8501.
+Docker Desktop must be running. The frontend connects to the health-checked backend internally and is exposed on port 8501; memory data persists in `./data`.
 
 ## API
 

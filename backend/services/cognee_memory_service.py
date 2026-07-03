@@ -1,6 +1,6 @@
-import asyncio
 import logging
 import os
+from pathlib import Path
 from typing import Any
 
 from backend.models.schemas import Memory, MemoryCreate
@@ -19,13 +19,19 @@ class CogneeMemoryService:
     """
 
     def __init__(self) -> None:
-        self.storage = LocalStorageService(os.getenv("COGNEE_STORAGE_PATH", "./data/cognee"))
+        storage_path = os.getenv("COGNEE_STORAGE_PATH", "./data/cognee")
+        self.storage = LocalStorageService(storage_path)
         self.embeddings = EmbeddingService()
         self._cognee: Any | None = None
         self.mode = "local"
         try:
             import cognee  # type: ignore
 
+            # Cognee otherwise resolves its relative default against the installed
+            # package, which may be read-only on local and container installs.
+            cognee_root = str((Path(storage_path) / "cognee-system").resolve())
+            cognee.config.system_root_directory(cognee_root)
+            cognee.config.data_root_directory(str((Path(storage_path) / "cognee-data").resolve()))
             self._cognee = cognee
             self.mode = "cognee+local"
         except Exception as exc:
@@ -47,6 +53,8 @@ class CogneeMemoryService:
         except Exception as exc:
             logger.warning("Cognee indexing failed; local copy remains available: %s", exc)
             self.mode = "local"
+            # Do not repeat an expensive known-failing setup for every demo row.
+            self._cognee = None
 
     async def remember(self, payload: MemoryCreate) -> Memory:
         memory = Memory(**payload.model_dump())

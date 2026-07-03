@@ -3,5 +3,5 @@ __pycache__/
 *.py[cod]
 .venv/
 data/cognee/
+data/*-check/
 .streamlit/
-.venv/

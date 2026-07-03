@@ -21,11 +21,14 @@ class HeritageService:
     async def load_samples(self, path: Path) -> list[Memory]:
         records = json.loads(path.read_text(encoding="utf-8"))
         existing = await self.memory.all()
-        signatures = {(m.elder_name, m.memory_text) for m in existing}
+        # Improvements change text, so stable provenance keeps demo loads idempotent.
+        signatures = {(m.elder_name, m.location, m.category) for m in existing}
         loaded = []
         for record in records:
-            if (record["elder_name"], record["memory_text"]) not in signatures:
+            signature = (record["elder_name"], record["location"], record["category"])
+            if signature not in signatures:
                 loaded.append(await self.memory.remember(MemoryCreate.model_validate(record)))
+                signatures.add(signature)
         return loaded
 
     @staticmethod
