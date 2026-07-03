@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field
 
 
 class MemoryCreate(BaseModel):
@@ -14,7 +14,7 @@ class MemoryCreate(BaseModel):
 
 
 class Memory(MemoryCreate):
-    id: str = Field(default_factory=lambda: str(uuid4()))
+    memory_id: str = Field(default_factory=lambda: str(uuid4()), validation_alias=AliasChoices("memory_id", "id"))
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     revisions: list[dict[str, Any]] = Field(default_factory=list)

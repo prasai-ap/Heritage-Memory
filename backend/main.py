@@ -21,11 +21,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 service = HeritageService()
+SAMPLE_DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "sample_memories.json"
 
 
 @app.get("/health")
 async def health() -> dict:
-    return {"status": "healthy", "app": app.title, "memory_mode": service.memory.mode, "llm_mode": service.gemini.mode}
+    return {"status": "healthy", "app": app.title, "memory_mode": service.memory.mode, "llm_mode": service.gemini.mode, "embedding_mode": service.memory.embeddings.mode}
 
 
 @app.post("/memory/remember", response_model=Memory, status_code=201)
@@ -60,6 +61,10 @@ async def graph() -> GraphResponse:
 
 @app.post("/demo/load-sample-data")
 async def load_sample_data() -> dict:
-    path = Path(__file__).resolve().parents[1] / "data" / "sample_memories.json"
-    loaded = await service.load_samples(path)
+    loaded = await service.load_samples(SAMPLE_DATA_PATH)
     return {"message": "Sample heritage loaded", "loaded": len(loaded), "total": len(await service.memory.all())}
+
+
+@app.get("/demo/sample-memories")
+async def sample_memories() -> list[dict]:
+    return service.sample_records(SAMPLE_DATA_PATH)

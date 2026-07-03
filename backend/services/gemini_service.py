@@ -9,14 +9,14 @@ logger = logging.getLogger(__name__)
 class GeminiService:
     def __init__(self) -> None:
         self.api_key = os.getenv("GEMINI_API_KEY", "").strip()
-        self.model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
+        self.model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
         self.mode = "gemini" if self.api_key else "mock"
 
     async def answer(self, question: str, memories: list[Memory]) -> str:
         if not memories:
-            return "I could not find a preserved memory related to that question yet."
+            return "I could not find enough remembered cultural context for this question."
         context = "\n\n".join(
-            f"[{m.id}] {m.elder_name} from {m.location} ({m.category}): {m.memory_text}"
+            f"[{m.memory_id}] {m.elder_name} from {m.location} ({m.category}): {m.memory_text}"
             for m in memories
         )
         if self.api_key:

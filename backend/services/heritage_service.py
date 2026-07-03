@@ -27,3 +27,7 @@ class HeritageService:
             if (record["elder_name"], record["memory_text"]) not in signatures:
                 loaded.append(await self.memory.remember(MemoryCreate.model_validate(record)))
         return loaded
+
+    @staticmethod
+    def sample_records(path: Path) -> list[dict]:
+        return json.loads(path.read_text(encoding="utf-8"))

@@ -17,7 +17,7 @@ class GraphService:
             person = f"person:{memory.elder_name.lower()}"
             place = f"place:{memory.location.lower()}"
             category = f"category:{memory.category.lower()}"
-            item = f"memory:{memory.id}"
+            item = f"memory:{memory.memory_id}"
             add_node(person, memory.elder_name, "person")
             add_node(place, memory.location, "place")
             add_node(category, memory.category, "category")
