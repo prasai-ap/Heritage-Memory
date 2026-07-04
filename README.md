@@ -97,6 +97,7 @@ Docker Desktop must be running. The frontend connects to the health-checked back
 | DELETE | `/memory/forget/{memory_id}` | Withdraw a memory |
 | GET | `/memory/graph` | Return graph nodes and relationships |
 | POST | `/demo/load-sample-data` | Idempotently load the demo archive |
+| POST | `/demo/reset-sample-data` | Replace stale demo records with the eight current samples |
 | GET | `/demo/sample-memories` | Preview the sample dataset |
 
 ## Track alignment and social impact

@@ -31,6 +31,15 @@ class HeritageService:
                 signatures.add(signature)
         return loaded
 
+    async def reset_samples(self, path: Path) -> list[Memory]:
+        """Replace only the bundled demo personas, preserving user memories."""
+        records = self.sample_records(path)
+        demo_elders = {record["elder_name"] for record in records}
+        for memory in await self.memory.all():
+            if memory.elder_name in demo_elders:
+                await self.memory.forget(memory.memory_id)
+        return await self.load_samples(path)
+
     @staticmethod
     def sample_records(path: Path) -> list[dict]:
         return json.loads(path.read_text(encoding="utf-8"))

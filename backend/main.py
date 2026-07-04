@@ -76,6 +76,16 @@ async def load_sample_data() -> dict:
     return {"message": "Sample heritage loaded", "loaded": len(loaded), "total": len(await service.memory.all())}
 
 
+@app.post("/demo/reset-sample-data")
+async def reset_sample_data() -> dict:
+    loaded = await service.reset_samples(SAMPLE_DATA_PATH)
+    return {
+        "message": "Nepal demo archive reset",
+        "loaded": len(loaded),
+        "total": len(await service.memory.all()),
+    }
+
+
 @app.get("/demo/sample-memories")
 async def sample_memories() -> list[dict]:
     return service.sample_records(SAMPLE_DATA_PATH)

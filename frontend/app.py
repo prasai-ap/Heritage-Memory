@@ -41,6 +41,12 @@ st.markdown("""
 .before{border-left:5px solid #8a8278}.after{border-left:5px solid #4f7c64}.improvement{padding:1rem;border-radius:14px;background:#f7ead5;border:1px solid #ead3ae}
 [data-testid="stSidebar"]{background:linear-gradient(180deg,#233f36,#315347)}[data-testid="stSidebar"] *{color:#fff}
 [data-testid="stForm"]{background:#fffdf8;border:1px solid #e7dac8;padding:1.4rem;border-radius:20px}
+div[data-baseweb="tab-list"]{position:sticky;top:3.4rem;z-index:900;display:flex;flex-wrap:wrap;gap:.35rem;background:#fffaf1f2;border:1px solid #e4d5c2;border-radius:16px;padding:.45rem .55rem;box-shadow:0 7px 22px #49372a18;backdrop-filter:blur(10px)}
+button[data-baseweb="tab"]{color:#58333d!important;background:#f3e8d8!important;border-radius:10px!important;padding:.55rem .85rem!important;font-weight:700!important}
+button[data-baseweb="tab"]:hover{background:#ead6bd!important;color:#702f43!important}
+button[data-baseweb="tab"][aria-selected="true"]{background:#7b3044!important;color:white!important;box-shadow:0 4px 12px #7b304433}
+button[data-baseweb="tab"] p{color:inherit!important;font-size:.88rem!important}
+.quick-ask{background:linear-gradient(135deg,#263f37,#3b6455);color:#fff;border-radius:22px;padding:1.4rem 1.6rem;margin:1rem 0 1.4rem}.quick-ask h2{font-family:Georgia,serif;margin:0 0 .35rem}.quick-ask p{opacity:.82;margin:0}
 @media(max-width:800px){.value-grid,.life-grid,.metric-grid,.insight-grid,.compare-grid,.status-grid{grid-template-columns:1fr}.hero{padding:2rem}.hero h1{font-size:2.6rem}}
 </style>
 """, unsafe_allow_html=True)
@@ -84,9 +90,9 @@ def archive() -> list[dict]:
 
 
 def load_demo():
-    result = api("POST", "/demo/load-sample-data")
+    result = api("POST", "/demo/reset-sample-data")
     if result:
-        st.toast(f"Archive ready · {result['loaded']} added · {result['total']} memories total")
+        st.toast(f"Demo reset · {result['loaded']} sample memories · {result['total']} total")
         st.rerun()
 
 
@@ -100,7 +106,7 @@ with st.sidebar:
     else:
         st.warning("Start the FastAPI backend on port 8000.")
     st.divider()
-    if st.button("Load Nepal demo archive", type="primary", use_container_width=True):
+    if st.button("Reset / load Nepal demo", type="primary", use_container_width=True):
         load_demo()
     st.caption("Built around continuing consent: knowledge can be corrected or withdrawn at any time.")
 
@@ -112,6 +118,30 @@ with home:
     st.markdown('''<section class="hero"><div class="eyebrow">A living cultural archive</div><h1>Heritage Memory</h1>
     <div class="tagline">Preserving oral culture with persistent AI memory</div>
     <div class="problem">When an elder’s voice is lost, a community can lose recipes, rituals, language, local history, and ways of reading the land. Heritage Memory helps that wisdom remain attributable, connected, correctable, and available to future generations.</div></section>''', unsafe_allow_html=True)
+    st.markdown('<div class="quick-ask"><h2>Ask the archive now</h2><p>Try the core experience immediately. Every answer is grounded in preserved memories and shows its sources.</p></div>', unsafe_allow_html=True)
+    quick_cols = st.columns(2)
+    for index, example in enumerate(EXAMPLES[:2]):
+        if quick_cols[index].button(example, key=f"home_example_{index}", use_container_width=True):
+            st.session_state.home_question = example
+    home_question = st.text_input(
+        "Ask a cultural question",
+        key="home_question",
+        placeholder="For example: How was Dashain celebrated in the village?",
+    )
+    if st.button("Ask Heritage Memory", type="primary", disabled=not home_question, key="home_ask"):
+        with st.spinner("Recalling connected cultural memories…"):
+            st.session_state.home_answer = api(
+                "POST", "/memory/recall", json={"question": home_question, "limit": 4}
+            )
+    home_answer = st.session_state.get("home_answer")
+    if home_answer:
+        st.markdown(f'<div class="answer-card"><div class="answer-label">Answer from persistent memory</div><p>{esc(home_answer["answer"])}</p></div>', unsafe_allow_html=True)
+        if home_answer["memories"]:
+            with st.expander(f'See {len(home_answer["memories"])} source memories used', expanded=True):
+                for source in home_answer["memories"]:
+                    st.markdown(memory_card(source, compact=True), unsafe_allow_html=True)
+        else:
+            st.info("No related memory was found yet. Reset/load the Nepal demo from the sidebar, then ask again.")
     st.markdown('''<div class="value-grid">
     <div class="value-card"><div class="icon">◉</div><h3>Remember oral stories</h3><p>Preserve an elder’s account with its person, place, meaning, and cultural context.</p></div>
     <div class="value-card"><div class="icon">⌕</div><h3>Recall cultural knowledge</h3><p>Ask natural questions and receive grounded answers linked to remembered sources.</p></div>
@@ -289,7 +319,7 @@ with forget:
 
 with demo:
     st.markdown('<div class="section-title">Nepal heritage demo archive</div><div class="section-copy">Eight vivid accounts show how festivals, food, land, language, learning, and craft become connected persistent memory.</div>', unsafe_allow_html=True)
-    if st.button("Load all eight memories", type="primary", key="demo_load"):
+    if st.button("Reset to the eight demo memories", type="primary", key="demo_load"):
         load_demo()
     samples = api("GET", "/demo/sample-memories", quiet=True) or []
     for sample in samples:
