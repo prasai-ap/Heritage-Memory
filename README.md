@@ -58,17 +58,6 @@ Copy .env.example to .env, then run: docker compose up --build
 Named Docker volumes preserve both cultural memories and downloaded model weights across restarts.
 The Docker image bakes in the multilingual embedding weights for deterministic offline startup. Compose also persists the model cache and allows a three-minute health-check grace period.
 
-## Winning demo flow
-
-1. Open **Home** and frame cultural loss as a memory problem.
-2. Load the eight Nepal stories from **Demo Dataset**.
-3. Reveal the connected elders, places, categories, memories, and tags in **Memory Graph**.
-4. Ask “How was Dashain celebrated in the village?” and inspect the sources.
-5. In **Improve**, add “Jamara was grown at home before Dashain.”
-6. Ask “What was prepared before Dashain?” and show that recall has changed.
-7. Use **Forget** to remove a memory whose consent has changed.
-8. Return to **Memory Graph** and **Insights** to show both updating immediately.
-
 ## Reliability and cultural safeguards
 
 - Answers are generated only from retrieved memories; insufficient context is stated plainly.
