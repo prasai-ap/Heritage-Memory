@@ -36,29 +36,31 @@ class StorageService:
         return next((m for m in self.all() if m.memory_id == memory_id), None)
 
     def upsert(self, memory: Memory) -> Memory:
-        records = self._read()
-        payload = memory.model_dump()
-        for index, record in enumerate(records):
-            if record.get("memory_id") == memory.memory_id:
-                records[index] = payload
-                break
-        else:
-            records.append(payload)
-        self._write(records)
+        with self._lock:
+            records = self._read()
+            payload = memory.model_dump()
+            for index, record in enumerate(records):
+                if record.get("memory_id") == memory.memory_id:
+                    records[index] = payload
+                    break
+            else:
+                records.append(payload)
+            self._write(records)
         return memory
 
     def delete(self, memory_id: str) -> Memory | None:
-        records = self._read()
-        found = next((r for r in records if r.get("memory_id") == memory_id), None)
-        if found:
-            self._write([r for r in records if r.get("memory_id") != memory_id])
-            return Memory.model_validate(found)
+        with self._lock:
+            records = self._read()
+            found = next((r for r in records if r.get("memory_id") == memory_id), None)
+            if found:
+                self._write([r for r in records if r.get("memory_id") != memory_id])
+                return Memory.model_validate(found)
         return None
 
     def insert_many(self, memories: list[Memory]) -> int:
-        existing = {m.memory_id: m for m in self.all()}
-        before = len(existing)
-        existing.update({m.memory_id: m for m in memories})
-        self._write([m.model_dump() for m in existing.values()])
-        return len(existing) - before
-
+        with self._lock:
+            existing = {m.memory_id: m for m in self.all()}
+            before = len(existing)
+            existing.update({m.memory_id: m for m in memories})
+            self._write([m.model_dump() for m in existing.values()])
+            return len(existing) - before

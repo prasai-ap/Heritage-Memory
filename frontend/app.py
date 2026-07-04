@@ -33,7 +33,7 @@ with st.sidebar:
     page=st.radio("Explore",["Home","Remember","Recall","Memory Graph","Timeline","Improve","Forget","Insights","Demo Dataset"],label_visibility="collapsed")
     st.divider();status=api("GET","/status")
     if status:
-        st.caption("SYSTEM STATUS");st.write("● Memory layer","Cognee" if status["cognee"]["available"] else "Local fallback");st.write("● Gemini",status["gemini"]["status"]);st.write("● Embeddings",status["embeddings"]["status"])
+        st.caption("SYSTEM STATUS");st.write("● Memory layer","Cognee" if status["cognee"]["operational"] else "Local fallback");st.write("● Gemini",status["gemini"]["status"]);st.write("● Embeddings",status["embeddings"]["status"])
 
 if page=="Home":
     st.markdown('<section class="hero"><div class="eyebrow" style="color:#e8b967">A living archive for communities</div><h1>Heritage Memory</h1><p>Preserving oral culture with persistent AI memory.</p></section>',unsafe_allow_html=True)
@@ -64,7 +64,12 @@ elif page=="Recall":
                     for m,s in zip(r["related_memories"],r["scores"]): st.markdown(f"**{m['elder_name']} · {m['location']}**  \n{m['memory_text']}  \nRelevance: {s:.2f}")
 elif page=="Memory Graph":
     title("Connections","The living memory graph","Every story becomes part of a web of elders, places, traditions, and themes.");d=api("GET","/memory/graph")
-    if d and d["nodes"]: graph(d)
+    if d and d["nodes"]:
+        graph(d)
+        with st.expander("Accessible relationship index"):
+            labels={node["id"]:node["label"] for node in d["nodes"]}
+            rows=[{"From":labels.get(e["from"],e["from"]),"Connected to":labels.get(e["to"],e["to"])} for e in d["edges"]]
+            st.dataframe(pd.DataFrame(rows),use_container_width=True,hide_index=True)
     elif d is not None: st.info("The graph is waiting for its first memory. Load the demo archive to see it bloom.")
 elif page=="Timeline":
     title("Timeline","Memories across time","A chronological path through the voices entrusted to the archive.")

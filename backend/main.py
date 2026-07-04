@@ -16,6 +16,7 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 memory_service = MemoryService()
 graph_service, insight_service = GraphService(), InsightService()
+SAMPLE_DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "sample_memories.json"
 
 
 @asynccontextmanager
@@ -37,10 +38,14 @@ def health():
 def status():
     cognee = memory_service.cognee.status()
     return {
-        "gemini": {"status": memory_service.gemini.mode, "model": memory_service.gemini.model_name},
+        "gemini": {
+            "status": memory_service.gemini.mode,
+            "model": memory_service.gemini.model_name,
+            "last_error": memory_service.gemini.last_error,
+        },
         "cognee": cognee,
         "embeddings": {"status": memory_service.embeddings.mode, "model": memory_service.embeddings.model_name},
-        "fallback_mode": not cognee["available"],
+        "fallback_mode": not cognee["operational"],
         "storage": "persistent-json",
     }
 
@@ -96,7 +101,7 @@ def insights():
 
 @app.get("/demo/sample-memories")
 def samples():
-    return json.loads(Path("data/sample_memories.json").read_text(encoding="utf-8"))
+    return json.loads(SAMPLE_DATA_PATH.read_text(encoding="utf-8"))
 
 
 @app.post("/demo/load-sample-data")
@@ -104,4 +109,3 @@ def load_samples():
     items = [Memory.model_validate(item) for item in samples()]
     added = memory_service.storage.insert_many(items)
     return {"message": f"{added} new cultural memories preserved.", "added": added, "total": len(memory_service.storage.all())}
-

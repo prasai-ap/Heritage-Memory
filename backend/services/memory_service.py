@@ -31,7 +31,14 @@ class MemoryService:
         ranked = sorted(zip(memories, scores), key=lambda item: item[1], reverse=True)
         # Lexical fallback uses zero as reliable evidence of no overlap. Neural
         # embeddings may express relevant multilingual matches at lower scores.
-        threshold = 0.01 if self.embeddings.mode == "lexical-fallback" else 0.18
+        if self.embeddings.mode == "lexical-fallback":
+            threshold = 0.01
+        else:
+            # Neural similarity is never exactly zero, even for unrelated text.
+            # Require meaningful confidence and keep results close to the strongest
+            # match so weak semantic associations cannot become answer evidence.
+            best_score = ranked[0][1] if ranked else 0
+            threshold = max(0.30, best_score - 0.25)
         selected = [(m, s) for m, s in ranked[:limit] if s >= threshold]
         return [m for m, _ in selected], [round(s, 4) for _, s in selected]
 
@@ -52,4 +59,3 @@ class MemoryService:
         if memory:
             await self.cognee.forget_memory(memory_id)
         return memory
-

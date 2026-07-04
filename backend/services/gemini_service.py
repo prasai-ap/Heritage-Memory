@@ -1,31 +1,51 @@
+import logging
 import os
 
 from backend.models.schemas import Memory
+
+logger = logging.getLogger(__name__)
 
 
 class GeminiService:
     def __init__(self):
         self.api_key = os.getenv("GEMINI_API_KEY", "").strip()
-        self.model_name = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+        self.model_name = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
         self.client = None
+        self.last_error = None
         if self.api_key:
             try:
                 from google import genai
                 self.client = genai.Client(api_key=self.api_key)
-            except Exception:
+            except Exception as exc:
+                self.last_error = str(exc)
+                logger.warning("Gemini initialization failed; using grounded mock mode: %s", exc)
                 self.client = None
 
     @property
     def mode(self) -> str:
-        return "connected" if self.client else "grounded-mock"
+        return "configured" if self.client else "grounded-mock"
+
+    def _generate(self, prompt: str) -> str | None:
+        if not self.client:
+            return None
+        try:
+            response = self.client.models.generate_content(model=self.model_name, contents=prompt)
+            text = (response.text or "").strip()
+            if text:
+                self.last_error = None
+                return text
+            self.last_error = "Gemini returned an empty response"
+        except Exception as exc:
+            self.last_error = str(exc)
+            logger.warning("Gemini request failed; using grounded mock mode: %s", exc)
+        return None
 
     def summarize(self, text: str) -> str:
-        if self.client:
-            prompt = "Summarize this oral heritage memory respectfully in one sentence. Add no facts:\n" + text
-            try:
-                return self.client.models.generate_content(model=self.model_name, contents=prompt).text.strip()
-            except Exception:
-                pass
+        generated = self._generate(
+            "Summarize this oral heritage memory respectfully in one sentence. Add no facts:\n" + text
+        )
+        if generated:
+            return generated
         clean = " ".join(text.split())
         return clean if len(clean) <= 180 else clean[:177].rsplit(" ", 1)[0] + "…"
 
@@ -36,8 +56,7 @@ class GeminiService:
             f"Memory {i + 1} — {m.elder_name}, {m.location}: {m.memory_text}"
             for i, m in enumerate(memories)
         )
-        if self.client:
-            prompt = f"""You are a respectful cultural archivist. Answer the question using ONLY the preserved memories below.
+        prompt = f"""You are a respectful cultural archivist. Answer the question using ONLY the preserved memories below.
 Do not add outside facts or assumptions. If they do not contain the answer, say the preserved memories are insufficient.
 Write a clear, warm answer and attribute details to the relevant elder or location.
 
@@ -45,10 +64,11 @@ QUESTION: {query}
 
 PRESERVED MEMORIES:
 {context}"""
-            try:
-                return self.client.models.generate_content(model=self.model_name, contents=prompt).text.strip()
-            except Exception:
-                pass
-        evidence = " ".join(m.summary or m.memory_text for m in memories)
+        generated = self._generate(prompt)
+        if generated:
+            return generated
+        evidence = " ".join(
+            f"{m.elder_name} from {m.location} remembered: {m.memory_text}"
+            for m in memories
+        )
         return f"From the preserved memories: {evidence}"
-

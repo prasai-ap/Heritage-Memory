@@ -18,6 +18,7 @@ class CogneeMemoryService:
     def __init__(self):
         self.enabled = os.getenv("USE_COGNEE", "true").lower() == "true"
         self.available = bool(importlib.util.find_spec("cognee")) if self.enabled else False
+        self.operational = False
         self.last_error = None
 
     async def remember_memory(self, memory: Memory) -> bool:
@@ -28,9 +29,11 @@ class CogneeMemoryService:
             import cognee
             await cognee.add(memory.model_dump_json(), dataset_name="heritage_memory")
             await cognee.cognify()
+            self.operational = True
             logger.info("Using Cognee memory")
             return True
         except Exception as exc:
+            self.operational = False
             self.last_error = str(exc)
             logger.warning("Using fallback memory: %s", exc)
             return False
@@ -55,5 +58,10 @@ class CogneeMemoryService:
         return self.available
 
     def status(self) -> dict:
-        return {"available": self.available, "enabled": self.enabled, "last_error": self.last_error}
-
+        return {
+            "available": self.available,
+            "operational": self.operational,
+            "enabled": self.enabled,
+            "mode": "cognee" if self.operational else "local-fallback",
+            "last_error": self.last_error,
+        }

@@ -7,17 +7,20 @@ services:
       APP_NAME: ${APP_NAME:-Heritage Memory}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.0-flash}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash}
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
       COGNEE_STORAGE_PATH: /app/data/cognee
       MEMORY_STORE_PATH: /app/data/memories.json
       USE_COGNEE: ${USE_COGNEE:-true}
+      HF_HOME: /root/.cache/huggingface
     volumes:
       - heritage_data:/app/data
+      - model_cache:/root/.cache/huggingface
     ports:
       - "8000:8000"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      start_period: 180s
       interval: 10s
       timeout: 5s
       retries: 5
@@ -34,3 +37,4 @@ services:
         condition: service_healthy
 volumes:
   heritage_data:
+  model_cache:

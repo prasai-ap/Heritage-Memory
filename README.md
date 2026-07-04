@@ -16,7 +16,7 @@ This is **not a chatbot**. A chatbot starts with a prompt. Heritage Memory start
 
 ## Why Cognee
 
-Culture is relational. A festival connects a person, place, food, ritual, and community. Cognee's graph-oriented persistent memory makes those relationships discoverable. The included adapter mirrors data into Cognee when available and degrades to a complete local JSON/vector workflow when it is not.
+Culture is relational. A festival connects a person, place, food, ritual, and community. Cognee's graph-oriented persistent memory makes those relationships discoverable. The included adapter mirrors data into Cognee when available and degrades to a complete local JSON/vector workflow when it is not. Local storage remains the durable source of truth, so a Cognee or network failure never blocks preservation.
 
 ## Features
 
@@ -53,8 +53,27 @@ For a Cognee-enabled local environment, install requirements-cognee.txt. Cognee 
 
 Copy .env.example to .env, then run: docker compose up --build
 
-The named Docker volume preserves memories across restarts.
+Named Docker volumes preserve both cultural memories and downloaded model weights across restarts.
+The Docker image bakes in the multilingual embedding weights for deterministic offline startup. Compose also persists the model cache and allows a three-minute health-check grace period.
 
+## Winning demo flow
+
+1. Open **Home** and frame cultural loss as a memory problem.
+2. Load the eight Nepal stories from **Demo Dataset**.
+3. Reveal the connected elders, places, categories, memories, and tags in **Memory Graph**.
+4. Ask “How was Dashain celebrated in the village?” and inspect the sources.
+5. In **Improve**, add “Jamara was grown at home before Dashain.”
+6. Ask “What was prepared before Dashain?” and show that recall has changed.
+7. Use **Forget** to remove a memory whose consent has changed.
+8. Return to **Memory Graph** and **Insights** to show both updating immediately.
+
+## Reliability and cultural safeguards
+
+- Answers are generated only from retrieved memories; insufficient context is stated plainly.
+- Every recalled answer exposes its elders, locations, tags, and source records.
+- Mock mode remains fully grounded and works without an API key.
+- Cached embeddings work without network access, then fall back to lexical relevance if needed.
+- Forgetting removes the local source record immediately. Production deployments should additionally verify deletion in every configured Cognee store.
 
 ## Track alignment
 
