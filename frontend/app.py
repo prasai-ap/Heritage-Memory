@@ -1,18 +1,21 @@
 import html, json, os
 from datetime import datetime
+from pathlib import Path
 import pandas as pd
 import requests
 import streamlit as st
 import streamlit.components.v1 as components
+from PIL import Image
 
-st.set_page_config(page_title="Heritage Memory", page_icon="◉", layout="wide")
+LOGO_PATH=Path(__file__).resolve().parent/"assets"/"heritage-memory-logo.png"
+st.set_page_config(page_title="Heritage Memory", page_icon=Image.open(LOGO_PATH), layout="wide")
 API=os.getenv("BACKEND_URL","http://localhost:8000").rstrip("/")
 CATEGORIES=["Festival","Recipe","Farming Practice","Local History","Language Phrase","Craft","Story","Ritual","Education Tradition"]
 st.markdown("""<style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap');
 :root{--ink:#2b2118;--rust:#a64b32;--gold:#d8a446;--muted:#75685d}.stApp{background:linear-gradient(145deg,#fbf7ee,#f5ecdc);color:var(--ink);font-family:'DM Sans',sans-serif}
 h1,h2,h3{font-family:'Playfair Display',serif!important;color:var(--ink)!important}.block-container{padding-top:2rem;max-width:1250px}[data-testid="stSidebar"]{background:#28251f}[data-testid="stSidebar"] *{color:#f8edda!important}
-.eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--rust);font-size:.72rem;font-weight:700}.hero{padding:4.7rem 4rem;border-radius:24px;background:linear-gradient(105deg,#1f221bf5,#53442de0);color:#fff;box-shadow:0 18px 50px #69492b2b;margin-bottom:2rem}.hero h1{font-size:4rem!important;color:#fff!important;margin:.25rem 0}.hero p{font-size:1.25rem;color:#eee0c9}
+.eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--rust);font-size:.72rem;font-weight:700}.hero{padding:3.7rem 3.5rem;border-radius:24px;background:linear-gradient(105deg,#1f221bf5,#53442de0);color:#fff;box-shadow:0 18px 50px #69492b2b;margin-bottom:2rem}.hero h1{font-size:4rem!important;color:#fff!important;margin:.25rem 0}.hero p{font-size:1.25rem;color:#eee0c9}
 .card{height:100%;padding:1.5rem;border:1px solid #e6d7c1;border-radius:16px;background:#fffaf1;box-shadow:0 7px 20px #50361a0c}.soft{color:var(--muted)}.pill{display:inline-block;padding:.3rem .65rem;background:#eee2cc;border-radius:20px;margin:.15rem;font-size:.8rem}.flow{padding:1.1rem;text-align:center;border-radius:14px;background:#322e27;color:#f3dcae;font-weight:600}.answer{border-left:5px solid var(--gold);padding:1.5rem;background:#fff;border-radius:4px 16px 16px 4px;font-size:1.08rem}.memory{padding:1.15rem 1.3rem;margin:.6rem 0;border-radius:14px;background:#fffaf3;border:1px solid #eadcc7}.consent{padding:1rem 1.2rem;background:#f1e7d7;border-radius:12px;border-left:4px solid #8d6147}.stButton>button{border-radius:10px;font-weight:600;border:none;background:#a64b32;color:white;padding:.6rem 1.1rem}
 </style>""",unsafe_allow_html=True)
 
@@ -29,14 +32,19 @@ def graph(data):
     components.html(doc,height=650)
 
 with st.sidebar:
-    st.markdown("## ◉ Heritage Memory");st.caption("A living archive for oral culture")
+    st.image(str(LOGO_PATH),use_container_width=True)
+    st.caption("A living archive for oral culture")
     page=st.radio("Explore",["Home","Remember","Recall","Memory Graph","Timeline","Improve","Forget","Insights","Demo Dataset"],label_visibility="collapsed")
     st.divider();status=api("GET","/status")
     if status:
         st.caption("SYSTEM STATUS");st.write("● Memory layer","Cognee" if status["cognee"]["operational"] else "Local fallback");st.write("● Gemini",status["gemini"]["status"]);st.write("● Embeddings",status["embeddings"]["status"])
 
 if page=="Home":
-    st.markdown('<section class="hero"><div class="eyebrow" style="color:#e8b967">A living archive for communities</div><h1>Heritage Memory</h1><p>Preserving oral culture with persistent AI memory.</p></section>',unsafe_allow_html=True)
+    brand,hero=st.columns([1,2.25],vertical_alignment="center")
+    with brand:
+        st.image(str(LOGO_PATH),use_container_width=True)
+    with hero:
+        st.markdown('<section class="hero"><div class="eyebrow" style="color:#e8b967">A living archive for communities</div><h1>Heritage Memory</h1><p>Preserving oral culture with persistent AI memory.</p></section>',unsafe_allow_html=True)
     st.markdown("### What disappears when a voice is not remembered?");st.write("Every community carries knowledge through elders. When those stories are not documented, traditions, recipes, local history, and lived experiences can disappear.")
     cols=st.columns(3)
     for col,num,head,body in zip(cols,["01","02","03"],["Remember oral stories","Recall cultural knowledge","Preserve what connects us"],["Capture a memory with its person, place, and cultural context.","Ask natural questions and receive answers grounded only in the archive.","Let future generations discover a connected, evolving cultural record."]): col.markdown(f'<div class="card"><div class="eyebrow">{num}</div><h3>{head}</h3><p class="soft">{body}</p></div>',unsafe_allow_html=True)

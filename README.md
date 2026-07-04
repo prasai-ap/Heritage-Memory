@@ -2,6 +2,8 @@
 
 > **Preserving oral culture with persistent AI memory.**
 
+![Heritage Memory logo](frontend/assets/heritage-memory-logo.png)
+
 Heritage Memory is a community archive for the knowledge elders carry: stories, recipes, festivals, farming practices, language, crafts, rituals, and local history. It turns each contribution into persistent, connected memory that can be recalled, improved, and—when consent changes—forgotten.
 
 ## Problem and solution
