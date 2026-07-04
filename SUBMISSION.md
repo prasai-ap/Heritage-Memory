@@ -1,40 +1,33 @@
 # Heritage Memory — Hackathon Submission
 
-## Short description
+## Short description (under 255 characters)
 
-Heritage Memory preserves elders’ oral culture as persistent AI memory communities can recall, improve, connect, and forget—with Gemini, Cognee, multilingual embeddings, and reliable local fallbacks.
+Heritage Memory preserves elders' oral knowledge as persistent, connected AI memory—grounded recall, a living cultural graph, evolving stories, and consent-aware forgetting.
 
-## Long description
+## Long description (under 2,000 characters)
 
-Stories, recipes, farming practices, local phrases, festivals, and village history often disappear when elders pass away or communities migrate. Heritage Memory gives communities a simple way to preserve that knowledge as persistent, governed AI memory.
+Every community carries knowledge through elders, but oral traditions can disappear when stories are not documented or passed on. Heritage Memory is a polished cultural memory platform for preserving stories, festivals, recipes, farming practices, language, craft, rituals, education, and local history.
 
-Each account is stored with its elder, place, category, and tags. Later, multilingual embeddings retrieve relevant memories and Gemini answers questions using only that evidence. The source memories remain visible, so users can inspect where an answer came from. Knowledge can be improved when an elder adds context—the earlier version remains in revision history—or forgotten when privacy, cultural restrictions, or consent require withdrawal.
+Unlike a generic chatbot, it demonstrates a complete memory lifecycle. **Remember** captures a voice with its elder, place, category, and themes. **Recall** uses multilingual similarity search and Gemini to answer only from relevant preserved memories, displaying the exact elders, places, tags, and source records behind every response. **Improve** lets knowledge grow while retaining an audit trail. **Forget** honors privacy, changing consent, and cultural sensitivity, immediately updating recall, the graph, and analytics.
 
-An interactive graph makes relationships tangible: Elder → Location → Category → Memory → Tags. This is not a disposable chatbot. The core product is an evolving, attributable archive that persists between conversations.
+The signature experience is an interactive cultural knowledge graph connecting Elder → Location/Category → Memory → Tags. A Nepal-focused demo archive makes the social value tangible through Dashain, Tihar, gundruk, terrace farming, stone water sources, traditional schooling, Nepal Bhasa, and pottery.
 
-Cognee supplies the persistent AI-memory integration boundary. Atomic JSON storage, lexical search, and grounded answer fallbacks keep the full demo working if Cognee, Hugging Face, or Gemini is unavailable. Eight Nepal-focused memories make the experience ready to demonstrate immediately.
+Cognee is the graph-oriented persistent memory layer, with a durable local fallback so the entire demo works without cloud credentials or perfect internet. Gemini produces respectful grounded answers when configured; deterministic mock mode keeps the no-key experience honest and functional.
 
-## Technologies
+Heritage Memory makes AI memory visible, inspectable, corrigible, and accountable—qualities that matter especially when technology is entrusted with living culture.
 
-FastAPI, Streamlit, Cognee, Gemini (`google-genai`), Hugging Face Sentence Transformers, PyVis, NetworkX, Pydantic, JSON, and Docker Compose.
+## Technologies used
 
-## Three-minute demo
+FastAPI, Streamlit, Cognee-ready async adapter, Gemini, Hugging Face Sentence Transformers, vis-network, Pydantic, JSON persistence, Docker Compose.
 
-1. Explain persistent, governable memory on **Home** and load the Nepal dataset.
-2. Ask “What did elders teach children?” in **Recall**; reveal the evidence cards.
-3. Open **Memory Graph** to explore people, places, traditions, and shared tags.
-4. Add a detail in **Improve** and explain preserved revision history.
-5. Use **Forget** to demonstrate continuing consent and privacy.
-6. Point to the provider modes: the archive remains usable offline.
+## Track alignment and uniqueness
 
-## Track alignment
+Persistent AI memory is the product itself. It visibly proves remember, recall, improve, forget, relational graphs, and durable storage. It uniquely joins grounded retrieval with cultural attribution, evolving knowledge, and a genuine right to be forgotten.
 
-The project makes the complete memory lifecycle—remember, recall, improve, and forget—the product foundation. Persistent memory carries cultural knowledge across sessions while preserving provenance and community control.
+## Demo video script
 
-## What makes it unique
-
-Heritage Memory treats cultural knowledge as governed relational memory, not chatbot context. It combines attribution, revisions, multilingual semantic retrieval, a visible knowledge graph, and consent-aware deletion in one resilient MVP.
+Open Home → load Nepal archive → explore graph → recall Dashain → inspect sources → improve Dashain with home-grown jamara → recall the improved fact → forget a sensitive record → show graph and insight changes.
 
 ## Future improvements
 
-Audio capture and source playback, Nepali and community-language interfaces, steward permissions, controls for sacred or restricted knowledge, contradiction review, encrypted community-owned hosting, and deeper Cognee graph/deletion synchronization.
+Consent-linked audio, speaker verification, native-language transcription, community governance, encryption, granular visibility, archive export, and production-grade Cognee deletion synchronization.

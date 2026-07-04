@@ -1,10 +1,50 @@
 [
-  {"elder_name":"Aama Dhan Maya Gurung","location":"Lamjung, Nepal","category":"Festival","memory_text":"During Dashain, smoke rose from every kitchen as relatives returned along the hill paths to the ancestral house. Elders pressed red tika and fresh jamara onto each forehead, speaking blessings for courage and a long life. Children crossed the whole village collecting blessings, but the true celebration was seeing an empty courtyard become a family again.","tags":["Dashain","tika","jamara","family","community gathering"]},
-  {"elder_name":"Aama Laxmi Shrestha","location":"Bhaktapur, Nepal","category":"Ritual","memory_text":"At Tihar we made a trail of oil lamps from the courtyard to the prayer room to welcome Laxmi. After dusk, groups moved from door to door singing deusi and bhailo; no doorway stayed dark or silent. Sisters wove marigold garlands for Bhai Tika, and neighbours sent plates of sel roti between homes.","tags":["Tihar","deusi-bhailo","diyo","Bhai Tika","sel roti","community gathering"]},
-  {"elder_name":"Baje Harka Bahadur Rai","location":"Dhankuta, Nepal","category":"Recipe","memory_text":"Gundruk began after the mustard and radish harvest. We wilted the leaves in the sun, crushed them until their scent changed, packed them tightly into an earthen pot, and sealed it warm beside the hearth. When the sourness was right, the whole family spread the leaves on a clean mat to dry—summer greens saved for a winter bowl of soup.","tags":["gundruk","fermentation","winter food","mustard leaves","shared work"]},
-  {"elder_name":"Aama Phulmati Tharu","location":"Dang, Nepal","category":"Farming Practice","memory_text":"The terraces were repaired before the monsoon, each stone wall holding both soil and the labour of earlier generations. We guided water from the upper field to the lower one with small mud gates, never taking more than our turn. Households exchanged rice seedlings so one failed nursery would not ruin a family’s year.","tags":["terrace farming","rice","irrigation","seed sharing","monsoon"]},
-  {"elder_name":"Baje Man Prasad","location":"Kavrepalanchok, Nepal","category":"Story","memory_text":"Our village spring was said to have appeared where a tired traveller struck the earth with a walking stick. At dawn, people waited with brass vessels and exchanged the day’s first news beside the water. Nobody washed clothes at the source; the old story carried a practical promise to keep everyone’s drinking water clean.","tags":["spring","water source","village story","conservation","community gathering"]},
-  {"elder_name":"Baje Pemba Sherpa","location":"Solukhumbu, Nepal","category":"Language Phrase","memory_text":"We say ‘thuchi che’ to offer thanks. Children learned to say it to people and quietly after receiving food or shelter. The words were small, but elders treated them as a daily practice: gratitude should be spoken before abundance is taken for granted.","tags":["Sherpa language","phrase","gratitude","oral teaching"]},
-  {"elder_name":"Guru Narayan Acharya","location":"Gorkha, Nepal","category":"Education Tradition","memory_text":"Before every child could afford paper, we spread fine dust across a wooden board and traced letters with a fingertip, smoothing the surface to begin again. Older pupils led multiplication tables beneath the pipal tree. If one voice faltered, the others carried it until the lesson belonged to everyone.","tags":["old school","learning","recitation","pipal tree","peer teaching"]},
-  {"elder_name":"Aama Sita Tamang","location":"Rasuwa, Nepal","category":"Craft","memory_text":"A bamboo doko is woven from the base upward, with every crossing tightened against the last. My father let my hands make loose, crooked patterns and then undid them beside me without anger. He said a strong basket comes only after learning that beginning again is part of the craft.","tags":["doko","bamboo","weaving","apprenticeship","craft wisdom"]}
+  {
+    "memory_id": "demo-dashain-001", "elder_name": "Aama Maya Gurung", "location": "Ghandruk, Kaski", "category": "Festival",
+    "memory_text": "Before the road reached our village, Dashain brought every branch of the family home on foot. We swept the stone courtyard, made a bamboo swing, and waited for the eldest hands to place tika and jamara on our foreheads. No one ate alone; even travellers were called in for rice, goat curry, and blessings.",
+    "tags": ["dashain", "tika", "family", "community"], "summary": "Aama Maya remembers Dashain as a homecoming of shared food, bamboo swings, tika, jamara, and blessings.",
+    "created_at": "2025-10-02T08:00:00+00:00", "updated_at": "2025-10-02T08:00:00+00:00", "improvements": []
+  },
+  {
+    "memory_id": "demo-tihar-002", "elder_name": "Baje Dhan Bahadur Rai", "location": "Dhankuta, Koshi", "category": "Festival",
+    "memory_text": "At Tihar we shaped small oil lamps from clay and placed them along every window ledge. After dark, children walked from house to house singing deusi and bhailo. Each doorway answered with sel roti, fruit, and a little money, and the songs tied the whole settlement together.",
+    "tags": ["tihar", "deusi-bhailo", "sel roti", "community"], "summary": "Tihar lit the village with clay lamps while deusi-bhailo songs and shared sel roti connected every household.",
+    "created_at": "2025-11-01T09:00:00+00:00", "updated_at": "2025-11-01T09:00:00+00:00", "improvements": []
+  },
+  {
+    "memory_id": "demo-gundruk-003", "elder_name": "Aama Sita Tamang", "location": "Kavrepalanchok, Bagmati", "category": "Recipe",
+    "memory_text": "After the mustard and radish leaves were washed, we wilted them in the sun, crushed them firmly, and packed them into an earthen pot. The sealed pot stayed warm for several days before the leaves were spread on a clean mat to dry. That gundruk carried the taste of our winter garden into the monsoon.",
+    "tags": ["gundruk", "fermentation", "winter", "food preservation"], "summary": "Sita Aama preserves winter greens as gundruk through wilting, fermentation in an earthen pot, and sun-drying.",
+    "created_at": "2025-12-14T07:30:00+00:00", "updated_at": "2025-12-14T07:30:00+00:00", "improvements": []
+  },
+  {
+    "memory_id": "demo-farming-004", "elder_name": "Baje Tek Bahadur Magar", "location": "Tansen, Palpa", "category": "Farming Practice",
+    "memory_text": "Our terraces were repaired before the first monsoon rain. Neighbours exchanged labour instead of money: one day everyone worked our slope, the next day we worked theirs. We planted millet along the edges because its roots held the soil when the rain ran hard.",
+    "tags": ["terrace farming", "monsoon", "parma", "millet"], "summary": "Tek Bahadur recalls communal labour repairing terraces and millet roots protecting soil before monsoon.",
+    "created_at": "2026-01-18T06:45:00+00:00", "updated_at": "2026-01-18T06:45:00+00:00", "improvements": []
+  },
+  {
+    "memory_id": "demo-water-005", "elder_name": "Aama Pabitra Shrestha", "location": "Panauti, Kavre", "category": "Local History",
+    "memory_text": "The old stone hiti was more than a water spout. Before sunrise we queued with copper vessels, exchanged news, arranged help for sick neighbours, and learned which fields needed hands. When the new pipes came, water moved closer to home, but our morning meeting place grew quiet.",
+    "tags": ["hiti", "water", "community", "change"], "summary": "Pabitra Aama remembers the stone hiti as both a water source and the village's morning meeting place.",
+    "created_at": "2026-02-09T05:30:00+00:00", "updated_at": "2026-02-09T05:30:00+00:00", "improvements": []
+  },
+  {
+    "memory_id": "demo-school-006", "elder_name": "Guru Hariprasad Adhikari", "location": "Baglung, Gandaki", "category": "Education Tradition",
+    "memory_text": "We learned beneath a pipal tree before the school had walls. Children traced letters on wooden boards dusted with soft ash, then wiped them clean for the next lesson. Older pupils helped the younger ones, and every book was wrapped carefully because several children shared it.",
+    "tags": ["school", "pipal tree", "learning", "children"], "summary": "Hariprasad recalls shared books, ash-covered writing boards, and peer learning beneath a pipal tree.",
+    "created_at": "2026-03-03T10:15:00+00:00", "updated_at": "2026-03-03T10:15:00+00:00", "improvements": []
+  },
+  {
+    "memory_id": "demo-language-007", "elder_name": "Aji Nani Maya Maharjan", "location": "Kirtipur, Kathmandu", "category": "Language Phrase",
+    "memory_text": "My grandmother greeted children with the Nepal Bhasa phrase 'Jwojalapa' and taught us that a greeting should slow you down long enough to truly see the person. We used it with elders, neighbours, and guests as a sign of respect and welcome.",
+    "tags": ["nepal bhasa", "jwojalapa", "greeting", "respect"], "summary": "Nani Maya explains Jwojalapa as a Nepal Bhasa greeting that carries attention, respect, and welcome.",
+    "created_at": "2026-04-21T11:00:00+00:00", "updated_at": "2026-04-21T11:00:00+00:00", "improvements": []
+  },
+  {
+    "memory_id": "demo-craft-008", "elder_name": "Baje Kaji Man Prajapati", "location": "Thimi, Bhaktapur", "category": "Craft",
+    "memory_text": "Clay for our pots was tested between finger and thumb before it touched the wheel. My father taught me to centre it by listening to the rhythm of the spinning stone, not by forcing it. Finished vessels dried slowly in shade, then families fired them together in a straw-covered kiln.",
+    "tags": ["pottery", "clay", "craft", "shared kiln"], "summary": "Kaji Man remembers learning to centre local clay by rhythm and firing vessels together in a shared kiln.",
+    "created_at": "2026-05-12T08:20:00+00:00", "updated_at": "2026-05-12T08:20:00+00:00", "improvements": []
+  }
 ]

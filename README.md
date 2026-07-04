@@ -2,113 +2,70 @@
 
 > **Preserving oral culture with persistent AI memory.**
 
-Heritage Memory is an AI-powered cultural archive for stories, traditions, recipes, festivals, local history, farming practices, language phrases, crafts, and teaching traditions shared by elders and communities.
+Heritage Memory is a community archive for the knowledge elders carry: stories, recipes, festivals, farming practices, language, crafts, rituals, and local history. It turns each contribution into persistent, connected memory that can be recalled, improved, and—when consent changes—forgotten.
 
-## The problem
+## Problem and solution
 
-Oral knowledge often disappears when elders pass away, families migrate, or local languages lose speakers. Conventional archives are difficult to contribute to, while ordinary chatbots forget conversations and cannot show how knowledge evolved or honor a request to remove it.
+Oral culture often lives in one person, one kitchen, or one village gathering. When it is not carried forward, context, relationships, language, and lived experience disappear with it.
 
-## The solution
+Heritage Memory captures a story with its elder, place, category, and themes. A Cognee-ready memory layer connects that context into a graph; multilingual embeddings retrieve relevant memories; Gemini explains only what the archive supports. Every answer shows its source threads.
 
-Heritage Memory turns each contributed account into attributable, persistent memory. People can retrieve knowledge through natural questions, refine an account when an elder adds context, see relationships between people and traditions, and remove knowledge when consent changes. Gemini answers only from retrieved memory; multilingual Hugging Face embeddings make local recall useful across diverse expressions.
+This is **not a chatbot**. A chatbot starts with a prompt. Heritage Memory starts with consent and a durable lifecycle:
 
-## Why persistent memory—and why Cognee?
+**Remember → Recall → Improve → Forget**
 
-Cognee's memory model fits cultural knowledge better than a one-off prompt. A remembered account can be retrieved in a later session and connected to elders, places, categories, and tags. The service boundary keeps Cognee indexing clear while an atomic JSON store makes the hackathon demo dependable offline.
+## Why Cognee
 
-This is **not a normal chatbot**: the conversation is only a doorway. The product's core is a governed archive with provenance, revisions, deletion, semantic retrieval, and a visible cultural graph.
+Culture is relational. A festival connects a person, place, food, ritual, and community. Cognee's graph-oriented persistent memory makes those relationships discoverable. The included adapter mirrors data into Cognee when available and degrades to a complete local JSON/vector workflow when it is not.
 
 ## Features
 
-- Remember structured oral accounts with elder, place, category, text, and tags
-- Recall grounded answers with Gemini and show every supporting memory
-- Improve memories while retaining revision history
-- Forget memories to support privacy and continuing consent
-- Explore `Elder → Location → Category → Memory → Tags` visually
-- Search locally with multilingual Sentence Transformers embeddings
-- Run without Gemini, Cognee, or an internet connection using graceful fallbacks
-- Load eight Nepal-focused stories in one click
+- Story-centered capture with generated summaries and consent
+- Grounded recall with elders, locations, tags, source memories, and relevance
+- Interactive elder → place/category → memory → tag graph
+- Append-only improvement history and immediate privacy-aware forgetting
+- Chronological timeline and cultural intelligence dashboard
+- Eight emotionally grounded Nepal demo memories
+- Live Gemini, Cognee, embedding, and fallback status panel
+- Offline-capable mock mode and persistent local storage
 
 ## Architecture
 
-```text
-                         ┌──────────── Gemini grounded answer
-Streamlit ──► FastAPI ──► Heritage service
-                         ├──────────── Cognee semantic memory
-                         ├──────────── JSON persistent fallback
-                         ├──────────── Hugging Face embeddings
-                         └──────────── PyVis relationship graph
-```
-
-## Memory lifecycle
-
-| Action | Cultural purpose | Implementation |
-|---|---|---|
-| Remember | Store an oral memory with provenance | Persist locally, then add and cognify in Cognee |
-| Recall | Answer from remembered cultural context | Rank with multilingual embeddings; Gemini uses only retrieved evidence |
-| Improve | Add corrections or details | Preserve the previous text as a revision and re-index the current account |
-| Forget | Remove private, withdrawn, or outdated knowledge | Delete the canonical record and remove it from the visible graph |
+Elder's oral memory → FastAPI lifecycle service → persistent storage + optional Cognee + Hugging Face embeddings → grounded Gemini answer → Streamlit graph and source evidence.
 
 ## Tech stack
 
-FastAPI, Streamlit, Cognee, Gemini (`google-genai`), Sentence Transformers, PyVis/NetworkX, Pydantic, JSON storage, and Docker Compose.
+FastAPI · Streamlit · Cognee-ready adapter · Gemini · Sentence Transformers · vis-network · Pydantic · Docker Compose
 
 ## Run locally
 
-Python 3.11 is recommended.
+1. Copy .env.example to .env.
+2. Run: pip install -r requirements.txt
+3. Run the API: uvicorn backend.main:app --reload
+4. In another terminal run: streamlit run frontend/app.py
+5. Open http://localhost:8501. API docs are at http://localhost:8000/docs.
 
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-Copy-Item .env.example .env
-uvicorn backend.main:app --reload
-```
+No API key is required: summaries and answers use a deterministic grounded fallback. Add GEMINI_API_KEY to .env for Gemini. The Hugging Face model downloads on first use; lexical similarity remains available if it cannot.
 
-In a second terminal:
+For a Cognee-enabled local environment, install requirements-cognee.txt. Cognee remains optional because its platform dependencies vary; the status panel shows whether the adapter connected.
 
-```powershell
-.venv\Scripts\Activate.ps1
-streamlit run frontend/app.py
-```
+## Docker
 
-Open `http://localhost:8501`; interactive API docs are at `http://localhost:8000/docs`. Add `GEMINI_API_KEY` to `.env` for generated answers. With no key, grounded mock responses keep the demo working.
+Copy .env.example to .env, then run: docker compose up --build
 
-The first semantic recall downloads the multilingual embedding model (roughly a one-time cold start); later runs use the local Hugging Face cache. If the model cannot be downloaded or loaded, recall automatically uses lexical similarity.
+The named Docker volume preserves memories across restarts.
 
-### Docker
 
-```powershell
-Copy-Item .env.example .env
-docker compose up --build
-```
+## Track alignment
 
-Docker Desktop must be running. The frontend connects to the health-checked backend internally and is exposed on port 8501; memory data persists in `./data`.
+Persistent AI memory is the product itself. The project visibly proves remember, recall, improve, forget, graph relationships, semantic retrieval, and durable storage. The fallback ensures the social-impact story survives flaky demo Wi-Fi.
 
-## API
+## Social impact and roadmap
 
-| Method | Endpoint | Purpose |
+Heritage Memory centers attribution, consent, source transparency, cultural respect, and removal. Next: consent-linked audio, speaker-approved edits, native-language transcription, community governance, encryption, granular visibility, archive export, and production-grade Cognee deletion synchronization.
+
+## Screenshots
+
+| Home | Living graph | Grounded recall |
 |---|---|---|
-| GET | `/health` | Provider modes and readiness |
-| GET | `/memory` | List the archive for timeline and stewardship views |
-| POST | `/memory/remember` | Preserve an oral account |
-| POST | `/memory/recall` | Recall grounded knowledge |
-| POST | `/memory/improve` | Correct or expand a memory |
-| DELETE | `/memory/forget/{memory_id}` | Withdraw a memory |
-| GET | `/memory/graph` | Return graph nodes and relationships |
-| POST | `/demo/load-sample-data` | Idempotently load the demo archive |
-| POST | `/demo/reset-sample-data` | Replace stale demo records with the eight current samples |
-| GET | `/demo/sample-memories` | Preview the sample dataset |
-
-## Track alignment and social impact
-
-Heritage Memory demonstrates persistent AI memory as the product primitive—not a chat feature. It helps communities build searchable intergenerational archives while keeping provenance, correction, and withdrawal visible. Community stewardship is essential: production deployments should include informed consent, role-based access, culturally restricted knowledge, encryption, and local-language governance.
-
-## Roadmap
-
-- Audio recording, transcription, speaker consent, and source playback
-- Nepali and community-language interfaces
-- Community steward roles and granular knowledge permissions
-- Cognee-native deletion reconciliation and graph synchronization
-- Contradiction review, citations, confidence indicators, and offline-first mobile capture
-- Encrypted backups and community-owned hosting
+| _Add demo screenshot_ | _Add demo screenshot_ | _Add demo screenshot_ |

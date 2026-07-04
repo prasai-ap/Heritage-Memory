@@ -1,35 +1,64 @@
-import asyncio
 import json
-import logging
+import os
+import threading
 from pathlib import Path
 
 from backend.models.schemas import Memory
 
-logger = logging.getLogger(__name__)
 
+class StorageService:
+    """Small, durable JSON store with atomic replacement and process-local locking."""
 
-class LocalStorageService:
-    """Small, atomic JSON store used as the reliable local persistence layer."""
+    def __init__(self, path: str | None = None):
+        self.path = Path(path or os.getenv("MEMORY_STORE_PATH", "data/memories.json"))
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._lock = threading.RLock()
+        if not self.path.exists():
+            self._write([])
 
-    def __init__(self, storage_path: str) -> None:
-        directory = Path(storage_path)
-        directory.mkdir(parents=True, exist_ok=True)
-        self.file = directory / "memories.json"
-        self.lock = asyncio.Lock()
+    def _read(self) -> list[dict]:
+        with self._lock:
+            try:
+                return json.loads(self.path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, FileNotFoundError):
+                return []
 
-    def read(self) -> list[Memory]:
-        if not self.file.exists():
-            return []
-        try:
-            return [Memory.model_validate(item) for item in json.loads(self.file.read_text(encoding="utf-8"))]
-        except Exception as exc:
-            logger.error("Unable to read fallback memory store: %s", exc)
-            return []
+    def _write(self, records: list[dict]) -> None:
+        with self._lock:
+            tmp = self.path.with_suffix(".tmp")
+            tmp.write_text(json.dumps(records, ensure_ascii=False, indent=2), encoding="utf-8")
+            tmp.replace(self.path)
 
-    def write(self, memories: list[Memory]) -> None:
-        temporary = self.file.with_suffix(".tmp")
-        temporary.write_text(
-            json.dumps([memory.model_dump() for memory in memories], ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
-        temporary.replace(self.file)
+    def all(self) -> list[Memory]:
+        return [Memory.model_validate(item) for item in self._read()]
+
+    def get(self, memory_id: str) -> Memory | None:
+        return next((m for m in self.all() if m.memory_id == memory_id), None)
+
+    def upsert(self, memory: Memory) -> Memory:
+        records = self._read()
+        payload = memory.model_dump()
+        for index, record in enumerate(records):
+            if record.get("memory_id") == memory.memory_id:
+                records[index] = payload
+                break
+        else:
+            records.append(payload)
+        self._write(records)
+        return memory
+
+    def delete(self, memory_id: str) -> Memory | None:
+        records = self._read()
+        found = next((r for r in records if r.get("memory_id") == memory_id), None)
+        if found:
+            self._write([r for r in records if r.get("memory_id") != memory_id])
+            return Memory.model_validate(found)
+        return None
+
+    def insert_many(self, memories: list[Memory]) -> int:
+        existing = {m.memory_id: m for m in self.all()}
+        before = len(existing)
+        existing.update({m.memory_id: m for m in memories})
+        self._write([m.model_dump() for m in existing.values()])
+        return len(existing) - before
+

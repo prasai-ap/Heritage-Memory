@@ -1,58 +1,51 @@
 from datetime import datetime, timezone
-from typing import Any
 from uuid import uuid4
 
-from pydantic import AliasChoices, BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+CATEGORIES = [
+    "Festival", "Recipe", "Farming Practice", "Local History", "Language Phrase",
+    "Craft", "Story", "Ritual", "Education Tradition",
+]
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+class Improvement(BaseModel):
+    text: str
+    created_at: str = Field(default_factory=utc_now)
 
 
 class MemoryCreate(BaseModel):
-    elder_name: str = Field(min_length=1, max_length=120)
-    location: str = Field(min_length=1, max_length=160)
-    category: str = Field(min_length=1, max_length=100)
-    memory_text: str = Field(min_length=3)
-    tags: list[str] = Field(default_factory=list)
+    elder_name: str = Field(min_length=2, max_length=120)
+    location: str = Field(min_length=2, max_length=160)
+    category: str
+    memory_text: str = Field(min_length=10, max_length=10000)
+    tags: list[str] = Field(default_factory=list, max_length=20)
+
+    @field_validator("category")
+    @classmethod
+    def supported_category(cls, value: str) -> str:
+        if value not in CATEGORIES:
+            raise ValueError(f"Category must be one of: {', '.join(CATEGORIES)}")
+        return value
 
 
 class Memory(MemoryCreate):
-    memory_id: str = Field(default_factory=lambda: str(uuid4()), validation_alias=AliasChoices("memory_id", "id"))
-    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    revisions: list[dict[str, Any]] = Field(default_factory=list)
+    memory_id: str = Field(default_factory=lambda: str(uuid4()))
+    summary: str = ""
+    created_at: str = Field(default_factory=utc_now)
+    updated_at: str = Field(default_factory=utc_now)
+    improvements: list[Improvement] = Field(default_factory=list)
 
 
 class RecallRequest(BaseModel):
-    question: str = Field(min_length=2)
-    limit: int = Field(default=5, ge=1, le=20)
-
-
-class RecallResponse(BaseModel):
-    answer: str
-    memories: list[Memory]
-    llm_mode: str
+    query: str = Field(min_length=3, max_length=1000)
+    limit: int = Field(default=4, ge=1, le=10)
 
 
 class ImproveRequest(BaseModel):
     memory_id: str
-    additional_detail: str = Field(min_length=2)
-    correction: bool = False
-
-
-class MessageResponse(BaseModel):
-    message: str
-
-
-class GraphNode(BaseModel):
-    id: str
-    label: str
-    type: str
-
-
-class GraphEdge(BaseModel):
-    source: str
-    target: str
-    label: str = ""
-
-
-class GraphResponse(BaseModel):
-    nodes: list[GraphNode]
-    edges: list[GraphEdge]
+    improvement: str = Field(min_length=3, max_length=5000)

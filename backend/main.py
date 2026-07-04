@@ -1,91 +1,107 @@
+import json
 import logging
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.models.schemas import ImproveRequest, Memory, MemoryCreate, RecallRequest
+from backend.services.graph_service import GraphService, InsightService
+from backend.services.memory_service import MemoryService
+
 load_dotenv()
-logging.basicConfig(
-    level=getattr(logging, os.getenv("LOG_LEVEL", "INFO").upper(), logging.INFO),
-    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-)
+logging.basicConfig(level=logging.INFO)
+memory_service = MemoryService()
+graph_service, insight_service = GraphService(), InsightService()
 
-from backend.models.schemas import (  # noqa: E402
-    GraphResponse, ImproveRequest, Memory, MemoryCreate, MessageResponse,
-    RecallRequest, RecallResponse,
-)
-from backend.services.heritage_service import HeritageService  # noqa: E402
 
-app = FastAPI(title=os.getenv("APP_NAME", "Heritage Memory"), version="0.1.0")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:8501", "http://127.0.0.1:8501"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-service = HeritageService()
-SAMPLE_DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "sample_memories.json"
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Path("data").mkdir(exist_ok=True)
+    yield
+
+
+app = FastAPI(title=os.getenv("APP_NAME", "Heritage Memory"), version="1.0.0", lifespan=lifespan)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
 @app.get("/health")
-async def health() -> dict:
-    return {"status": "healthy", "app": app.title, "memory_mode": service.memory.mode, "llm_mode": service.gemini.mode, "embedding_mode": service.memory.embeddings.mode}
+def health():
+    return {"status": "healthy", "app": "Heritage Memory"}
 
 
-@app.post("/memory/remember", response_model=Memory, status_code=201)
-async def remember(payload: MemoryCreate) -> Memory:
-    return await service.memory.remember(payload)
-
-
-@app.get("/memory", response_model=list[Memory])
-async def list_memories() -> list[Memory]:
-    """Return the archive for timeline and stewardship views."""
-    return await service.memory.all()
-
-
-@app.post("/memory/recall", response_model=RecallResponse)
-async def recall(payload: RecallRequest) -> RecallResponse:
-    return await service.recall(payload.question, payload.limit)
-
-
-@app.post("/memory/improve", response_model=Memory)
-async def improve(payload: ImproveRequest) -> Memory:
-    memory = await service.memory.improve(payload.memory_id, payload.additional_detail, payload.correction)
-    if not memory:
-        raise HTTPException(404, "Memory not found")
-    return memory
-
-
-@app.delete("/memory/forget/{memory_id}", response_model=MessageResponse)
-async def forget(memory_id: str) -> MessageResponse:
-    if not await service.memory.forget(memory_id):
-        raise HTTPException(404, "Memory not found")
-    return MessageResponse(message="Memory forgotten")
-
-
-@app.get("/memory/graph", response_model=GraphResponse)
-async def graph() -> GraphResponse:
-    return service.graph.build(await service.memory.all())
-
-
-@app.post("/demo/load-sample-data")
-async def load_sample_data() -> dict:
-    loaded = await service.load_samples(SAMPLE_DATA_PATH)
-    return {"message": "Sample heritage loaded", "loaded": len(loaded), "total": len(await service.memory.all())}
-
-
-@app.post("/demo/reset-sample-data")
-async def reset_sample_data() -> dict:
-    loaded = await service.reset_samples(SAMPLE_DATA_PATH)
+@app.get("/status")
+def status():
+    cognee = memory_service.cognee.status()
     return {
-        "message": "Nepal demo archive reset",
-        "loaded": len(loaded),
-        "total": len(await service.memory.all()),
+        "gemini": {"status": memory_service.gemini.mode, "model": memory_service.gemini.model_name},
+        "cognee": cognee,
+        "embeddings": {"status": memory_service.embeddings.mode, "model": memory_service.embeddings.model_name},
+        "fallback_mode": not cognee["available"],
+        "storage": "persistent-json",
     }
 
 
+@app.post("/memory/remember", response_model=Memory, status_code=201)
+async def remember(payload: MemoryCreate):
+    return await memory_service.remember(payload)
+
+
+@app.post("/memory/recall")
+async def recall(payload: RecallRequest):
+    memories, scores = await memory_service.recall(payload.query, payload.limit)
+    answer = memory_service.gemini.answer(payload.query, memories)
+    return {
+        "answer": answer, "related_memories": memories, "scores": scores,
+        "connected_elders": sorted({m.elder_name for m in memories}),
+        "connected_locations": sorted({m.location for m in memories}),
+        "connected_tags": sorted({t for m in memories for t in m.tags}),
+        "grounded": bool(memories),
+    }
+
+
+@app.post("/memory/improve", response_model=Memory)
+async def improve(payload: ImproveRequest):
+    result = await memory_service.improve(payload.memory_id, payload.improvement)
+    if not result:
+        raise HTTPException(404, "Memory not found")
+    return result
+
+
+@app.delete("/memory/forget/{memory_id}")
+async def forget(memory_id: str):
+    result = await memory_service.forget(memory_id)
+    if not result:
+        raise HTTPException(404, "Memory not found")
+    return {"message": "Memory removed with care.", "forgotten_memory": result}
+
+
+@app.get("/memory/all", response_model=list[Memory])
+def all_memories():
+    return memory_service.storage.all()
+
+
+@app.get("/memory/graph")
+def graph():
+    return graph_service.build(memory_service.storage.all())
+
+
+@app.get("/memory/insights")
+def insights():
+    return insight_service.calculate(memory_service.storage.all())
+
+
 @app.get("/demo/sample-memories")
-async def sample_memories() -> list[dict]:
-    return service.sample_records(SAMPLE_DATA_PATH)
+def samples():
+    return json.loads(Path("data/sample_memories.json").read_text(encoding="utf-8"))
+
+
+@app.post("/demo/load-sample-data")
+def load_samples():
+    items = [Memory.model_validate(item) for item in samples()]
+    added = memory_service.storage.insert_many(items)
+    return {"message": f"{added} new cultural memories preserved.", "added": added, "total": len(memory_service.storage.all())}
+
