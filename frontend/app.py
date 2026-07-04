@@ -67,7 +67,11 @@ elif page=="Recall":
         if r:
             st.markdown(f'<div class="answer"><div class="eyebrow">Grounded answer</div><br>{html.escape(r["answer"])}</div>',unsafe_allow_html=True)
             if r["grounded"]:
-                st.markdown("### Memory threads used");x,y,z=st.columns(3);x.write("**Elders**",*r["connected_elders"]);y.write("**Places**",*r["connected_locations"]);z.write("**Tags**",*["#"+t for t in r["connected_tags"]])
+                st.markdown("### Memory threads used")
+                x,y,z=st.columns(3)
+                x.markdown("**Elders**  \n" + " · ".join(r["connected_elders"]))
+                y.markdown("**Places**  \n" + " · ".join(r["connected_locations"]))
+                z.markdown("**Tags**  \n" + " · ".join("#" + tag for tag in r["connected_tags"]))
                 with st.expander(f"View {len(r['related_memories'])} source memories"):
                     for m,s in zip(r["related_memories"],r["scores"]): st.markdown(f"**{m['elder_name']} · {m['location']}**  \n{m['memory_text']}  \nRelevance: {s:.2f}")
 elif page=="Memory Graph":
